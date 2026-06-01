@@ -1,0 +1,55 @@
+create database gestion_pedidos_compra;
+use gestion_pedidos_compra;
+
+CREATE TABLE pedidos_compra(
+	id_pedido int auto_increment,
+    codigo_pedido varchar(10) not null,
+    cod_proveedor varchar(20) not null,
+    nombre_proveedor varchar(100) not null,
+    fecha_pedido date not null,
+    fecha_entrega_prevista date,
+    estado ENUM ('SOLICITADO', 'RECIBIDO', 'CANCELADO')
+		not null default 'SOLICITADO',
+	observaciones varchar(200),
+    constraint pk_pedidos_compra primary key (id_pedido),
+    constraint uk_pedidos_codigo unique (codigo_pedido),
+    constraint chk_codigo_pedido_formato
+		check (codigo_pedido REGEXP '^PC_[0-9]{5}/[0-9]{2}$'),
+	constraint chk_fecha_pedido
+		check (fecha_entrega_prevista IS NULL
+        or fecha_entrega_prevista >= fecha_pedido)
+);
+
+CREATE TABLE detalles_pedido(
+	id_detalle_pedido int auto_increment,
+	id_pedido int not null,
+    descripcion_producto varchar (150) not null,
+    categoria_producto ENUM ('HARDWARE', 'SOFTWARE', 'PERIFERICO', 'REDES', 'CONSUMIBLE') not null DEFAULT 'HARDWARE',
+    cantidad int not null,
+    precio_unitario decimal (10,2) not null,
+    importe_linea decimal (10,2) not null,
+    constraint pk_detalles_pedido PRIMARY KEY (id_detalle_pedido),
+    constraint fk_detalle_pedido Foreign key (id_pedido) references pedidos_compra (id_pedido)
+		on delete cascade,
+	constraint chk_cantidad_pedido check (cantidad > 0),
+    constraint chk_precio_unitario check (precio_unitario>0),
+    constraint chk_importe_linea check (importe_linea >= 0)
+);
+
+insert into pedidos_compra(codigo_pedido, cod_proveedor,nombre_proveedor, fecha_pedido,
+fecha_entrega_prevista, estado, observaciones) VALUES
+('PC_10001/26', 'PROV-001','TechSupply Canarias S.L', '2026-05-07', '2026-05-20', 'SOLICITADO', 'Pedido de material para renovacion de aula informatica'),
+('PC_10002/26', 'PROV-002', 'Redes y Sistemas Atlantico S.L', '2026-05-08', '2026-05-18', 'RECIBIDO', 'Pedido de equipamiento de red para el departamento tecnico'),
+('PC_10003/26', 'PROV-001', 'TechSupply Canarias S.L', '2026-05-10', '2026-05-25', 'SOLICITADO', 'Pedido de licenicas y perifericos para nuevos equipos'),
+('PC_10004/26', 'PROV-003', 'Licencias Software Pro S.L', '2026-05-11', '2026-05-30', 'CANCELADO', 'Pedido cancelado por cambio de proveedor');
+
+insert into detalles_pedido(id_pedido, descripcion_producto, categoria_producto,cantidad,
+precio_unitario, importe_linea) VALUES
+(1, 'Disco SSD 1TB SATA', 'HARDWARE', 10,45.00,450.00),
+(1, 'Raton optico USB', 'PERIFERICO', 25,8.00,200.00),
+(1, 'Memoria RAM DDR4 16GB', 'HARDWARE', 12, 38.50, 462.00),
+(2, 'Switch gestionable 24 puertos', 'REDES', 2, 180.00, 360.00),
+(2, 'Latiguillo Ethernet Cat 6', 'REDES', 100, 1.20, 120.00),
+(3, 'Licencia IDE profesional anual', 'SOFTWARE', 15, 60.00, 900.00),
+(3, 'Toner impresora laser', 'CONSUMIBLE', 8, 32.00, 256.00),
+(4, 'Monitor LED 24 pulgadas', 'PERIFERICO', 5, 120.00, 600.00);
