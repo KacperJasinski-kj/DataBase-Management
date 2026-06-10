@@ -17,3 +17,5 @@ Java console application to manage purchase orders with a MySQL database.
 
 ## Database
 Run the `BASE_DE_DATOS.sql` script in MySQL before starting the application.
+
+Contact: kacperjasinskibusiness@gmail.com
